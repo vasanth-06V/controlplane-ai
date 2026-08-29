@@ -57,16 +57,32 @@
   @media (max-width: 1100px) {
     .grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
     .grid.cols-5 { grid-template-columns: repeat(3, 1fr); }
+    main { max-width: 100%; }
+  }
+  @media (max-width: 900px) {
+    .grid.cols-2 { grid-template-columns: 1fr; }
+    .grid.cols-5 { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 760px) {
-    header { padding: 12px 16px; }
-    header h1 { font-size: 15.5px; }
+    header { padding: 10px 14px; }
+    header h1 { font-size: 15px; }
     header .tagline { display: none; }
-    main { padding: 14px; }
+    header .brand .dot { width: 8px; height: 8px; }
+    main { padding: 12px; }
+    .grid { gap: 10px; }
+    .grid.cols-2, .grid.cols-3, .grid.cols-4, .grid.cols-5 { grid-template-columns: repeat(2, 1fr); }
+    nav { padding: 0 8px; }
+    nav button { padding: 10px 10px; font-size: 12px; }
+    .card { padding: 12px; border-radius: 8px; }
+    .card h2 { font-size: 11.5px; margin-bottom: 10px; }
+    .stat .val { font-size: 20px; }
+    .stat .lbl { font-size: 10.5px; }
+    .section-title { font-size: 13.5px; margin: 18px 0 10px; }
+  }
+  @media (max-width: 480px) {
     .grid.cols-2, .grid.cols-3, .grid.cols-4, .grid.cols-5 { grid-template-columns: 1fr; }
-    nav button { padding: 11px 12px; font-size: 12.5px; }
-    .card { padding: 14px; }
-    .stat .val { font-size: 24px; }
+    .row > * { min-width: 100%; }
+    table { min-width: 420px; }
   }
   .card {
     background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px;
@@ -130,11 +146,15 @@
   .findings-list .count { color: var(--accent); font-weight: 700; font-family: var(--mono); flex-shrink: 0; }
   .section-title { font-size: 15px; font-weight: 700; margin: 26px 0 12px; }
   .section-title:first-child { margin-top: 0; }
-  .chart-box { position: relative; height: 220px; }
-  .chart-box-sm { height: 220px; max-width: 260px; margin: 0 auto; }
-  @media (max-width: 760px) {
-    .chart-box { height: 200px; }
-    .chart-box-sm { height: 190px; max-width: 220px; }
+  .chart-box { position: relative; height: 170px; }
+  .chart-box-sm { height: 160px; max-width: 190px; margin: 0 auto; }
+  @media (max-width: 900px) {
+    .chart-box { height: 160px; }
+    .chart-box-sm { height: 150px; max-width: 170px; }
+  }
+  @media (max-width: 480px) {
+    .chart-box { height: 150px; }
+    .chart-box-sm { height: 140px; max-width: 150px; }
   }
 </style>
 </head>
@@ -309,6 +329,9 @@ const el = (id) => document.getElementById(id);
 const DECISION_COLORS = {allow:"#35c98f", edit:"#f2c14e", flag_for_review:"#ff9d4d", block:"#ff5c66"};
 Chart.defaults.color = "#8892a6";
 Chart.defaults.borderColor = "#232b3d";
+Chart.defaults.font.size = 10.5;
+Chart.defaults.plugins.legend.labels.boxWidth = 10;
+Chart.defaults.plugins.legend.labels.padding = 8;
 
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
