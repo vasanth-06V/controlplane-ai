@@ -95,6 +95,14 @@ def get_recent_checks(limit: int = 50, use_case: str | None = None) -> list[dict
         return [dict(r) for r in rows]
 
 
+def get_all_checks_raw(limit: int = 5000) -> list[dict]:
+    with _lock, _connect() as conn:
+        rows = conn.execute(
+            "SELECT * FROM checks ORDER BY created_at ASC LIMIT ?", (limit,)
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
 def get_metrics() -> dict:
     with _lock, _connect() as conn:
         total = conn.execute("SELECT COUNT(*) AS c FROM checks").fetchone()["c"]

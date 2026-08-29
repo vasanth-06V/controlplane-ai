@@ -1,5 +1,7 @@
 import time
+import json
 import asyncio
+from collections import defaultdict, Counter
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -21,6 +23,15 @@ registry = PolicyRegistry()
 audit.init_db()
 
 BORDERLINE_LOW, BORDERLINE_HIGH = 0.35, 0.65
+
+# Illustrative, stated assumption (see BUSINESS_PROPOSAL.md): average avoided-incident
+# cost per use case, used only to turn "checks that were edited or blocked" into a
+# directional cost-avoidance figure for the business dashboard. Not a measured value.
+COST_AVOIDANCE_USD = {
+    "customer_support_chatbot": 120,
+    "internal_knowledge_copilot": 600,
+    "decision_support_regulated": 4000,
+}
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
@@ -155,3 +166,131 @@ def checks(limit: int = 50, use_case: str | None = None):
 @app.get("/api/metrics")
 def metrics():
     return audit.get_metrics()
+
+
+@app.get("/api/business-metrics")
+def business_metrics():
+    rows = audit.get_all_checks_raw(limit=5000)
+    total = len(rows)
+
+    if total == 0:
+        return {
+            "kpis": {
+                "total_interactions": 0, "use_cases_covered": 0,
+                "auto_remediated_rate": None, "human_review_rate": None,
+                "block_rate": None, "allow_rate": None, "avg_overall_risk_score": None,
+                "override_rate": None, "estimated_incidents_prevented": 0,
+                "estimated_cost_avoided_usd": 0, "latency_sla_compliance_pct": None,
+            },
+            "risk_by_use_case": [], "risk_heatmap": [], "category_averages": {},
+            "decision_trend": [], "latency_compliance": [], "top_findings": [],
+        }
+
+    decision_counts = Counter(r["decision"] for r in rows)
+    use_cases_seen = set(r["use_case"] for r in rows)
+    human_review_count = sum(1 for r in rows if r["human_review_required"])
+    avg_score = round(sum(r["overall_score"] for r in rows) / total, 3)
+
+    incidents_prevented = decision_counts.get("edit", 0) + decision_counts.get("block", 0)
+    cost_avoided = sum(
+        COST_AVOIDANCE_USD.get(r["use_case"], 250)
+        for r in rows if r["decision"] in ("edit", "block")
+    )
+
+    latency_hits, latency_total = 0, 0
+    per_uc_latency = defaultdict(list)
+    per_uc_scores = defaultdict(list)
+    per_uc_decisions = defaultdict(Counter)
+    category_scores = defaultdict(list)
+    heatmap_scores = defaultdict(lambda: defaultdict(list))
+    finding_counter = Counter()
+    trend = defaultdict(Counter)
+
+    for r in rows:
+        uc = r["use_case"]
+        per_uc_latency[uc].append(r["latency_ms"])
+        per_uc_scores[uc].append(r["overall_score"])
+        per_uc_decisions[uc][r["decision"]] += 1
+        trend[r["created_at"][:10]][r["decision"]] += 1
+
+        try:
+            budget = registry.get(uc).get("latency_budget_ms")
+        except KeyError:
+            budget = None
+        if budget:
+            latency_total += 1
+            if r["latency_ms"] <= budget:
+                latency_hits += 1
+
+        for cat in json.loads(r["categories_json"]):
+            category_scores[cat["category"]].append(cat["score"])
+            heatmap_scores[uc][cat["category"]].append(cat["score"])
+            for finding in cat["findings"]:
+                if finding.startswith("No ") or finding.startswith("Best-matching source") or finding.startswith("Escalated"):
+                    continue
+                finding_counter[finding.split(" x")[0].split(':')[0][:70]] += 1
+
+    risk_by_use_case = []
+    for uc, scores in per_uc_scores.items():
+        label = registry.use_cases.get(uc, {}).get("label", uc)
+        n = len(scores)
+        risk_by_use_case.append({
+            "use_case": uc, "label": label, "checks": n,
+            "avg_score": round(sum(scores) / n, 3),
+            "block_rate": round(per_uc_decisions[uc].get("block", 0) / n, 3),
+            "human_review_rate": round(
+                sum(1 for row in rows if row["use_case"] == uc and row["human_review_required"]) / n, 3
+            ),
+        })
+
+    risk_heatmap = [
+        {"use_case": uc, "category": cat, "avg_score": round(sum(v) / len(v), 3)}
+        for uc, cats in heatmap_scores.items() for cat, v in cats.items()
+    ]
+
+    category_averages = {cat: round(sum(v) / len(v), 3) for cat, v in category_scores.items()}
+
+    decision_trend = [
+        {"date": date, **{d: counts.get(d, 0) for d in ("allow", "edit", "flag_for_review", "block")}}
+        for date, counts in sorted(trend.items())
+    ]
+
+    latency_compliance = []
+    for uc, latencies in per_uc_latency.items():
+        try:
+            budget = registry.get(uc).get("latency_budget_ms")
+        except KeyError:
+            budget = None
+        compliant = sum(1 for l in latencies if budget and l <= budget)
+        latency_compliance.append({
+            "use_case": uc,
+            "avg_latency_ms": round(sum(latencies) / len(latencies), 2),
+            "budget_ms": budget,
+            "compliant_pct": round(compliant / len(latencies) * 100, 1) if budget else None,
+        })
+
+    top_findings = [{"finding": f, "count": c} for f, c in finding_counter.most_common(8)]
+
+    feedback_metrics = audit.get_metrics()
+
+    return {
+        "kpis": {
+            "total_interactions": total,
+            "use_cases_covered": len(use_cases_seen),
+            "auto_remediated_rate": round(decision_counts.get("edit", 0) / total, 3),
+            "human_review_rate": round(human_review_count / total, 3),
+            "block_rate": round(decision_counts.get("block", 0) / total, 3),
+            "allow_rate": round(decision_counts.get("allow", 0) / total, 3),
+            "avg_overall_risk_score": avg_score,
+            "override_rate": feedback_metrics["override_rate"],
+            "estimated_incidents_prevented": incidents_prevented,
+            "estimated_cost_avoided_usd": cost_avoided,
+            "latency_sla_compliance_pct": round(latency_hits / latency_total * 100, 1) if latency_total else None,
+        },
+        "risk_by_use_case": risk_by_use_case,
+        "risk_heatmap": risk_heatmap,
+        "category_averages": category_averages,
+        "decision_trend": decision_trend,
+        "latency_compliance": latency_compliance,
+        "top_findings": top_findings,
+    }

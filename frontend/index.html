@@ -21,45 +21,66 @@
     --block: #ff5c66;
     --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; min-width: 0; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0; background: var(--bg); color: var(--text);
     font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: hidden;
   }
   header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 28px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px;
+    padding: 14px 24px; border-bottom: 1px solid var(--border);
     background: linear-gradient(180deg, var(--panel), var(--bg));
   }
-  header .brand { display: flex; align-items: center; gap: 10px; }
-  header .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  header .brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  header .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); flex-shrink: 0; }
   header h1 { font-size: 17px; margin: 0; letter-spacing: 0.3px; }
   header .tagline { color: var(--text-dim); font-size: 12.5px; margin-left: 10px; padding-left: 10px; border-left: 1px solid var(--border); }
-  nav { display: flex; gap: 4px; padding: 0 24px; border-bottom: 1px solid var(--border); background: var(--bg); }
+  nav {
+    display: flex; gap: 2px; padding: 0 12px; border-bottom: 1px solid var(--border); background: var(--bg);
+    overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: thin;
+  }
   nav button {
-    background: none; border: none; color: var(--text-dim); padding: 12px 16px;
-    font-size: 13.5px; cursor: pointer; border-bottom: 2px solid transparent;
+    background: none; border: none; color: var(--text-dim); padding: 12px 14px;
+    font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; flex-shrink: 0;
   }
   nav button.active { color: var(--text); border-bottom-color: var(--accent); }
-  main { padding: 24px 28px; max-width: 1280px; margin: 0 auto; }
+  main { padding: 20px; max-width: 1320px; margin: 0 auto; }
   .view { display: none; }
   .view.active { display: block; }
-  .grid { display: grid; gap: 18px; }
+  .grid { display: grid; gap: 16px; }
   .grid.cols-2 { grid-template-columns: 1fr 1fr; }
   .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
   .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+  @media (max-width: 1100px) {
+    .grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid.cols-5 { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 760px) {
+    header { padding: 12px 16px; }
+    header h1 { font-size: 15.5px; }
+    header .tagline { display: none; }
+    main { padding: 14px; }
+    .grid.cols-2, .grid.cols-3, .grid.cols-4, .grid.cols-5 { grid-template-columns: 1fr; }
+    nav button { padding: 11px 12px; font-size: 12.5px; }
+    .card { padding: 14px; }
+    .stat .val { font-size: 24px; }
+  }
   .card {
     background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 18px;
   }
-  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-dim); margin: 0 0 14px; }
+  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-dim); margin: 0 0 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .card p.hint { color: var(--text-dim); font-size: 12px; margin: -8px 0 14px; }
   label { display: block; font-size: 12px; color: var(--text-dim); margin: 12px 0 5px; }
   select, textarea, input {
     width: 100%; background: var(--panel-2); border: 1px solid var(--border); color: var(--text);
     border-radius: 6px; padding: 9px 10px; font-size: 13.5px; font-family: inherit; resize: vertical;
   }
   textarea { min-height: 70px; }
-  .row { display: flex; gap: 10px; }
-  .row > * { flex: 1; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 140px; }
   button.primary {
     margin-top: 16px; background: var(--accent); color: #fff; border: none; border-radius: 6px;
     padding: 10px 18px; font-size: 13.5px; font-weight: 600; cursor: pointer;
@@ -71,35 +92,44 @@
   }
   .decision-pill {
     display: inline-block; padding: 5px 14px; border-radius: 999px; font-weight: 700;
-    font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.4px;
+    font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap;
   }
   .decision-allow { background: rgba(53,201,143,0.15); color: var(--allow); }
   .decision-edit { background: rgba(242,193,78,0.15); color: var(--edit); }
   .decision-flag_for_review { background: rgba(255,157,77,0.15); color: var(--flag); }
   .decision-block { background: rgba(255,92,102,0.15); color: var(--block); }
   .cat-row { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; background: var(--panel-2); }
-  .cat-row .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .cat-row .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap; }
   .cat-row .name { font-weight: 700; text-transform: capitalize; }
   .bar { height: 6px; border-radius: 4px; background: #232b3d; overflow: hidden; margin: 6px 0; }
   .bar > div { height: 100%; }
   .findings { margin: 6px 0 0; padding-left: 18px; color: var(--text-dim); font-size: 12.5px; }
   .findings li { margin-bottom: 3px; }
-  .final-text { font-family: var(--mono); font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; white-space: pre-wrap; }
-  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .final-text { font-family: var(--mono); font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; white-space: pre-wrap; word-break: break-word; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 480px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
   th { color: var(--text-dim); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.4px; }
   tr:hover td { background: rgba(91,140,255,0.04); }
-  .stat { text-align: center; }
-  .stat .val { font-size: 30px; font-weight: 700; }
-  .stat .lbl { color: var(--text-dim); font-size: 12px; margin-top: 4px; }
+  .stat { text-align: center; position: relative; }
+  .stat .val { font-size: 28px; font-weight: 700; line-height: 1.1; }
+  .stat .lbl { color: var(--text-dim); font-size: 11.5px; margin-top: 6px; }
+  .stat .sub { font-size: 10.5px; color: var(--text-dim); opacity: 0.75; margin-top: 2px; }
   .muted { color: var(--text-dim); }
   .explain-list { font-size: 12.5px; color: var(--text-dim); line-height: 1.7; margin: 10px 0 0; padding-left: 18px; }
   .checkid { font-family: var(--mono); font-size: 11.5px; color: var(--text-dim); }
   pre.policy { font-family: var(--mono); font-size: 12px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; overflow-x: auto; max-height: 560px; }
-  .badge { display:inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: var(--accent-dim); color: var(--accent); margin-left: 6px; }
-  #feedbackRow { display: none; margin-top: 14px; align-items: center; gap: 10px; }
+  .badge { display:inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: var(--accent-dim); color: var(--accent); }
+  #feedbackRow { display: none; margin-top: 14px; align-items: center; gap: 10px; flex-wrap: wrap; }
   #feedbackRow select { width: auto; }
   .empty { color: var(--text-dim); padding: 30px; text-align: center; font-size: 13px; }
+  .heat-cell { text-align: center; font-weight: 700; border-radius: 4px; padding: 6px 4px; font-size: 12px; }
+  .findings-list { list-style: none; margin: 0; padding: 0; font-size: 12.5px; }
+  .findings-list li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .findings-list li:last-child { border-bottom: none; }
+  .findings-list .count { color: var(--accent); font-weight: 700; font-family: var(--mono); flex-shrink: 0; }
+  .section-title { font-size: 15px; font-weight: 700; margin: 26px 0 12px; }
+  .section-title:first-child { margin-top: 0; }
 </style>
 </head>
 <body>
@@ -115,8 +145,9 @@
 
 <nav>
   <button class="tab-btn active" data-view="console">Live Console</button>
+  <button class="tab-btn" data-view="business">Business Dashboard</button>
+  <button class="tab-btn" data-view="metrics">Detection Metrics</button>
   <button class="tab-btn" data-view="audit">Audit Log</button>
-  <button class="tab-btn" data-view="metrics">Metrics</button>
   <button class="tab-btn" data-view="policy">Policy Registry</button>
 </nav>
 
@@ -149,7 +180,7 @@
         <h2>Decision</h2>
         <div id="resultEmpty" class="empty">Run a check to see the ControlPlane decision trace here.</div>
         <div id="resultBody" style="display:none;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
             <span id="decisionPill" class="decision-pill">—</span>
             <span class="checkid" id="checkMeta"></span>
           </div>
@@ -174,23 +205,55 @@
     </div>
   </section>
 
-  <!-- AUDIT LOG -->
-  <section class="view" id="view-audit">
-    <div class="card">
-      <h2>Audit trail <span class="badge">full trace per decision</span></h2>
-      <table>
-        <thead><tr>
-          <th>Time</th><th>Use case</th><th>Decision</th><th>Overall</th><th>Latency</th><th>Check ID</th>
-        </tr></thead>
-        <tbody id="auditRows"></tbody>
-      </table>
-      <div id="auditEmpty" class="empty" style="display:none;">No checks logged yet — run something in Live Console.</div>
+  <!-- BUSINESS DASHBOARD -->
+  <section class="view" id="view-business">
+    <div id="bizEmpty" class="empty" style="display:none;">No checks logged yet — run a few interactions in Live Console to populate the business dashboard.</div>
+    <div id="bizBody">
+
+      <div class="section-title">Executive KPIs</div>
+      <div class="grid cols-5" id="bizKpis"></div>
+
+      <div class="section-title">Risk posture by use case</div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h2>Avg risk score, block rate &amp; review load</h2>
+          <div class="table-wrap">
+            <table id="riskByUseCaseTable">
+              <thead><tr><th>Use case</th><th>Checks</th><th>Avg score</th><th>Block rate</th><th>Human review rate</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Risk heatmap <span class="badge">use case × category</span></h2>
+          <p class="hint">Darker / redder = higher average risk score for that category in that use case.</p>
+          <div class="table-wrap"><table id="heatmapTable"></table></div>
+        </div>
+      </div>
+
+      <div class="section-title">Trends &amp; SLA</div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h2>Decision volume trend</h2>
+          <canvas id="chartTrend" height="200"></canvas>
+        </div>
+        <div class="card">
+          <h2>Latency vs. policy SLA budget</h2>
+          <canvas id="chartLatencySla" height="200"></canvas>
+        </div>
+      </div>
+
+      <div class="section-title">What's driving risk</div>
+      <div class="card">
+        <h2>Top findings across all checks</h2>
+        <ul class="findings-list" id="topFindingsList"></ul>
+      </div>
     </div>
   </section>
 
-  <!-- METRICS -->
+  <!-- DETECTION METRICS -->
   <section class="view" id="view-metrics">
-    <div class="grid cols-4" style="margin-bottom:18px;">
+    <div class="grid cols-4" style="margin-bottom:16px;">
       <div class="card stat"><div class="val" id="mTotal">0</div><div class="lbl">Total checks</div></div>
       <div class="card stat"><div class="val" id="mOverride">—</div><div class="lbl">Reviewer override rate</div></div>
       <div class="card stat"><div class="val" id="mFP">0</div><div class="lbl">False-positive-like (over-flag)</div></div>
@@ -200,9 +263,25 @@
       <div class="card"><h2>Decisions by outcome</h2><canvas id="chartDecisions" height="220"></canvas></div>
       <div class="card"><h2>Volume by use case</h2><canvas id="chartUseCase" height="220"></canvas></div>
     </div>
-    <div class="card" style="margin-top:18px;">
+    <div class="card" style="margin-top:16px;">
       <h2>Average latency by use case (ms)</h2>
       <canvas id="chartLatency" height="120"></canvas>
+    </div>
+  </section>
+
+  <!-- AUDIT LOG -->
+  <section class="view" id="view-audit">
+    <div class="card">
+      <h2>Audit trail <span class="badge">full trace per decision</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Time</th><th>Use case</th><th>Decision</th><th>Overall</th><th>Latency</th><th>Check ID</th>
+          </tr></thead>
+          <tbody id="auditRows"></tbody>
+        </table>
+      </div>
+      <div id="auditEmpty" class="empty" style="display:none;">No checks logged yet — run something in Live Console.</div>
     </div>
   </section>
 
@@ -220,8 +299,10 @@
 <script>
 const API = "";
 let useCases = [];
-
 const el = (id) => document.getElementById(id);
+const DECISION_COLORS = {allow:"#35c98f", edit:"#f2c14e", flag_for_review:"#ff9d4d", block:"#ff5c66"};
+Chart.defaults.color = "#8892a6";
+Chart.defaults.borderColor = "#232b3d";
 
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -232,6 +313,7 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
     if (btn.dataset.view === "audit") loadAudit();
     if (btn.dataset.view === "metrics") loadMetrics();
     if (btn.dataset.view === "policy") loadPolicy();
+    if (btn.dataset.view === "business") loadBusinessDashboard();
   });
 });
 
@@ -282,6 +364,12 @@ function scoreColor(score) {
   if (score < 0.5) return "var(--edit)";
   if (score < 0.8) return "var(--flag)";
   return "var(--block)";
+}
+function scoreColorHex(score) {
+  if (score < 0.25) return "#35c98f";
+  if (score < 0.5) return "#f2c14e";
+  if (score < 0.8) return "#ff9d4d";
+  return "#ff5c66";
 }
 
 el("runCheck").addEventListener("click", async () => {
@@ -368,13 +456,12 @@ async function loadMetrics() {
   el("mFN").textContent = m.false_negative_like_count;
 
   const decisionLabels = Object.keys(m.by_decision);
-  const decisionColors = {allow:"#35c98f", edit:"#f2c14e", flag_for_review:"#ff9d4d", block:"#ff5c66"};
 
   if (chartDecisions) chartDecisions.destroy();
   chartDecisions = new Chart(el("chartDecisions"), {
     type: "doughnut",
-    data: { labels: decisionLabels, datasets: [{ data: decisionLabels.map(l => m.by_decision[l]), backgroundColor: decisionLabels.map(l => decisionColors[l] || "#5b8cff") }] },
-    options: { plugins: { legend: { labels: { color: "#e6e9f0" } } } }
+    data: { labels: decisionLabels, datasets: [{ data: decisionLabels.map(l => m.by_decision[l]), backgroundColor: decisionLabels.map(l => DECISION_COLORS[l] || "#5b8cff") }] },
+    options: { plugins: { legend: { labels: { color: "#e6e9f0" } } }, maintainAspectRatio: true }
   });
 
   const ucLabels = Object.keys(m.by_use_case);
@@ -392,6 +479,98 @@ async function loadMetrics() {
     data: { labels: latLabels, datasets: [{ label: "Avg latency (ms)", data: latLabels.map(l => m.avg_latency_ms_by_use_case[l]), backgroundColor: "#35c98f" }] },
     options: { indexAxis: "y", scales: { x: { ticks: { color: "#8892a6" } }, y: { ticks: { color: "#8892a6" } } }, plugins: { legend: { display: false } } }
   });
+}
+
+function kpiTile(val, lbl, sub) {
+  return `<div class="card stat"><div class="val">${val}</div><div class="lbl">${lbl}</div>${sub ? `<div class="sub">${sub}</div>` : ""}</div>`;
+}
+function pct(x) { return x === null || x === undefined ? "—" : (x*100).toFixed(1) + "%"; }
+
+let chartTrend, chartLatencySla;
+async function loadBusinessDashboard() {
+  const res = await fetch(API + "/api/business-metrics");
+  const m = await res.json();
+
+  el("bizEmpty").style.display = m.kpis.total_interactions ? "none" : "block";
+  el("bizBody").style.display = m.kpis.total_interactions ? "block" : "none";
+  if (!m.kpis.total_interactions) return;
+
+  el("bizKpis").innerHTML = [
+    kpiTile(m.kpis.total_interactions, "Total interactions checked"),
+    kpiTile(pct(m.kpis.human_review_rate), "Routed to human review"),
+    kpiTile(pct(m.kpis.auto_remediated_rate), "Auto-remediated (redacted)", "no human needed"),
+    kpiTile(pct(m.kpis.block_rate), "Blocked outright"),
+    kpiTile(m.kpis.avg_overall_risk_score, "Avg weighted risk score"),
+    kpiTile(m.kpis.estimated_incidents_prevented, "Est. incidents prevented", "edited + blocked checks"),
+    kpiTile("$" + m.kpis.estimated_cost_avoided_usd.toLocaleString(), "Est. cost avoided", "illustrative assumption — see docs"),
+    kpiTile(m.kpis.latency_sla_compliance_pct === null ? "—" : m.kpis.latency_sla_compliance_pct + "%", "Latency SLA compliance"),
+    kpiTile(pct(m.kpis.override_rate), "Reviewer override rate", m.kpis.override_rate === null ? "no feedback yet" : "lower is better"),
+  ].join("");
+
+  const tbody = document.querySelector("#riskByUseCaseTable tbody");
+  tbody.innerHTML = m.risk_by_use_case.map(r => `
+    <tr>
+      <td>${r.label}</td>
+      <td>${r.checks}</td>
+      <td style="color:${scoreColorHex(r.avg_score)}; font-weight:700;">${r.avg_score}</td>
+      <td>${pct(r.block_rate)}</td>
+      <td>${pct(r.human_review_rate)}</td>
+    </tr>
+  `).join("");
+
+  const useCasesInHeat = [...new Set(m.risk_heatmap.map(h => h.use_case))];
+  const categoriesInHeat = [...new Set(m.risk_heatmap.map(h => h.category))];
+  const heatLookup = {};
+  m.risk_heatmap.forEach(h => heatLookup[h.use_case + "|" + h.category] = h.avg_score);
+  const heatTable = el("heatmapTable");
+  heatTable.innerHTML = `
+    <thead><tr><th>Use case</th>${categoriesInHeat.map(c => `<th style="text-align:center;">${c}</th>`).join("")}</tr></thead>
+    <tbody>${useCasesInHeat.map(uc => `
+      <tr><td>${uc}</td>${categoriesInHeat.map(c => {
+        const v = heatLookup[uc + "|" + c];
+        if (v === undefined) return "<td>—</td>";
+        return `<td><div class="heat-cell" style="background:${scoreColorHex(v)}22; color:${scoreColorHex(v)};">${v}</div></td>`;
+      }).join("")}</tr>
+    `).join("")}</tbody>
+  `;
+
+  const trendLabels = m.decision_trend.map(t => t.date);
+  if (chartTrend) chartTrend.destroy();
+  chartTrend = new Chart(el("chartTrend"), {
+    type: "bar",
+    data: {
+      labels: trendLabels,
+      datasets: ["allow","edit","flag_for_review","block"].map(d => ({
+        label: d, data: m.decision_trend.map(t => t[d]), backgroundColor: DECISION_COLORS[d]
+      }))
+    },
+    options: {
+      scales: { x: { stacked: true, ticks: { color: "#8892a6" } }, y: { stacked: true, ticks: { color: "#8892a6" } } },
+      plugins: { legend: { labels: { color: "#e6e9f0" } } }
+    }
+  });
+
+  const slaLabels = m.latency_compliance.map(l => l.use_case);
+  if (chartLatencySla) chartLatencySla.destroy();
+  chartLatencySla = new Chart(el("chartLatencySla"), {
+    type: "bar",
+    data: {
+      labels: slaLabels,
+      datasets: [
+        { label: "Avg latency (ms)", data: m.latency_compliance.map(l => l.avg_latency_ms), backgroundColor: "#5b8cff" },
+        { label: "Budget (ms)", data: m.latency_compliance.map(l => l.budget_ms), backgroundColor: "#232b3d", borderColor: "#8892a6", borderWidth: 1 },
+      ]
+    },
+    options: {
+      indexAxis: "y",
+      scales: { x: { ticks: { color: "#8892a6" } }, y: { ticks: { color: "#8892a6" } } },
+      plugins: { legend: { labels: { color: "#e6e9f0" } } }
+    }
+  });
+
+  el("topFindingsList").innerHTML = m.top_findings.length
+    ? m.top_findings.map(f => `<li><span>${f.finding}</span><span class="count">${f.count}</span></li>`).join("")
+    : `<li class="muted">No notable findings yet.</li>`;
 }
 
 loadUseCases();

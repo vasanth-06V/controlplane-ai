@@ -143,9 +143,19 @@ frontend build step.
 - **Live Console** — pick a use case, load a built-in example (or write your own prompt/response
   pair), run a check, see the full score breakdown and explanation trace, and submit a reviewer
   override.
+- **Business Dashboard** — the executive-facing view: KPI tiles (human review rate, auto-remediation
+  rate, block rate, avg risk score, estimated incidents prevented, illustrative cost avoided, latency
+  SLA compliance, reviewer override rate), a risk-by-use-case table, a use-case × category risk
+  heatmap, a stacked decision-volume trend chart, a latency-vs-policy-budget chart, and a "what's
+  driving risk" findings list. Backed by `GET /api/business-metrics`.
+- **Detection Metrics** — the lower-level operational view: decision distribution, override rate,
+  FP/FN-like counts, latency by use case. Backed by `GET /api/metrics`.
 - **Audit Log** — every check ever run, with decision and latency.
-- **Metrics** — decision distribution, override rate, FP/FN-like counts, latency by use case.
 - **Policy Registry** — the live policy JSON currently governing decisions.
+
+The whole UI is responsive — grids collapse to fewer columns down to a single column on phone-width
+screens, tables and the policy JSON scroll horizontally inside their own container instead of the
+page, and the nav scrolls horizontally on narrow viewports instead of wrapping.
 
 API docs (OpenAPI/Swagger) are auto-served at `/docs`.
 
