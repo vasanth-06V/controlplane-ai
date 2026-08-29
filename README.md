@@ -14,6 +14,15 @@ Built for the Accenture Innovation Challenge — Round 2 (Responsible AI Checker
 
 ---
 
+## 🎥 Demo Video
+
+**[TODO: add demo video link here]** — a ~3–5 minute walkthrough covering the PII + hallucination
+catch on the customer chatbot, the hallucination catch on the internal copilot, the bias catch on
+the decision-support tool, and the feedback loop / metrics dashboards. See
+[`DEMO_SCRIPT.md`](DEMO_SCRIPT.md) for the recording script.
+
+---
+
 ## 1. What this prototype demonstrates
 
 This is a working, runnable proof-of-concept of the core mechanism — not a mockup. It is intentionally
