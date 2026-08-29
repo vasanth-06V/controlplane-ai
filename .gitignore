@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+backend/controlplane_audit.db
+.claude/
+.DS_Store

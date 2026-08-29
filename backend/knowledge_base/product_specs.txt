@@ -1,0 +1,7 @@
+Product Specification Sheet — ControlPlane Widget X1
+The X1 device has a battery life of 12 hours under normal usage.
+It supports Wi-Fi 6 and Bluetooth 5.2 connectivity.
+The device weighs 145 grams and has an IP54 water resistance rating.
+Warranty coverage is 1 year from the date of purchase, extendable to 3 years.
+Maximum operating temperature is 45 degrees Celsius.
+The X1 does not support satellite connectivity or offline voice control.

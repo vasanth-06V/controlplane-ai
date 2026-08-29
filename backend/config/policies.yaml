@@ -1,0 +1,96 @@
+# ControlPlane.ai — Policy Registry
+# Each use case gets its own risk tolerance, latency budget, detector set,
+# and human-in-the-loop requirement. This file is the "governance layer":
+# behavior changes per use case / geography without touching detector code.
+#
+# Score scale for every category: 0.0 (no risk) - 1.0 (severe risk)
+# Decision tiers, evaluated in order against the *weighted overall score*:
+#   allow            -> score <  allow_below
+#   edit             -> allow_below <= score < edit_below   (auto-redact/soften, then allow)
+#   flag_for_review  -> edit_below  <= score < block_at     (delivered with a warning + queued for human review)
+#   block            -> score >= block_at
+#
+# category weights determine how PII / hallucination / bias combine into
+# the overall score for THIS use case (they must sum to 1.0 per policy).
+
+version: "1.3.0"
+
+geo_overrides:
+  EU:
+    pii_severity_multiplier: 1.3   # GDPR: PII exposure weighted higher
+  US_HEALTHCARE:
+    pii_severity_multiplier: 1.5   # HIPAA-adjacent sensitivity
+  DEFAULT:
+    pii_severity_multiplier: 1.0
+
+use_cases:
+
+  customer_support_chatbot:
+    label: "Customer-Facing Support Chatbot"
+    mode: real_time
+    latency_budget_ms: 300
+    human_review_required_above: 0.85   # only escalate to a human above this
+    detectors:
+      pii: { enabled: true, depth: fast }
+      hallucination: { enabled: true, depth: fast }   # skip deep retrieval unless borderline
+      bias: { enabled: true, depth: fast }
+    category_weights:
+      pii: 0.45
+      hallucination: 0.35
+      bias: 0.20
+    thresholds:
+      allow_below: 0.25
+      edit_below: 0.50
+      block_at: 0.80
+    notes: >
+      High volume, low latency budget, customer trust at stake. PII leakage is
+      the costliest failure mode (regulatory + brand), so it's weighted highest
+      and thresholds are tight. Deep hallucination check only escalates when the
+      fast pass is borderline (0.35-0.65) so p99 latency stays low.
+
+  internal_knowledge_copilot:
+    label: "Internal Employee Knowledge Copilot"
+    mode: interactive
+    latency_budget_ms: 1500
+    human_review_required_above: 0.90
+    detectors:
+      pii: { enabled: true, depth: fast }
+      hallucination: { enabled: true, depth: deep }   # employees can be misled into bad decisions
+      bias: { enabled: true, depth: fast }
+    category_weights:
+      pii: 0.25
+      hallucination: 0.55
+      bias: 0.20
+    thresholds:
+      allow_below: 0.30
+      edit_below: 0.55
+      block_at: 0.85
+    notes: >
+      Internal audience, higher latency tolerance, but hallucinated internal
+      "facts" (policy, process, numbers) propagate into real decisions, so
+      hallucination is weighted highest and always gets the deep (retrieval +
+      judge) check.
+
+  decision_support_regulated:
+    label: "Decision-Support Tool (Regulated Workflow)"
+    mode: batch_or_gated
+    latency_budget_ms: 5000
+    human_review_required_above: 0.40   # low bar — this is a high-stakes surface
+    detectors:
+      pii: { enabled: true, depth: deep }
+      hallucination: { enabled: true, depth: deep }
+      bias: { enabled: true, depth: deep }
+    category_weights:
+      pii: 0.30
+      hallucination: 0.45
+      bias: 0.25
+    thresholds:
+      allow_below: 0.15
+      edit_below: 0.30
+      block_at: 0.60
+    notes: >
+      Embedded in a regulated workflow (e.g. credit, hiring, clinical triage
+      support). Latency budget is generous, so every check always runs at full
+      depth. Thresholds are the tightest of all three profiles and the human
+      review bar is deliberately low — under-flagging here is the real
+      liability, so the tuning intentionally accepts more reviewer load.
