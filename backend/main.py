@@ -157,13 +157,31 @@ async def check(req: CheckRequest):
 async def seed_demo_data_if_empty():
     if audit.get_metrics()["total_checks"] > 0:
         return
-    check_ids = []
+    results = []
     for example in SEED_CHECKS:
-        result = await check(CheckRequest(**example))
-        check_ids.append(result.check_id)
-    # One illustrative reviewer override so the feedback-driven metrics
-    # (override rate, FP/FN-like counts) aren't empty on first load either.
-    audit.log_feedback(check_ids[0], "demo-reviewer", "block", "Card number should have been blocked, not just flagged.")
+        results.append(await check(CheckRequest(**example)))
+
+    # Seed a realistic MIX of reviewer feedback: some confirmations (reviewer
+    # agrees with ControlPlane's decision) and some overrides (reviewer
+    # disagrees). Seeding only overrides would pin the override rate at a
+    # misleading 100% on first load, which misrepresents the checker as
+    # always wrong rather than showing what the metric actually tracks.
+    audit.log_feedback(
+        results[0].check_id, "demo-reviewer", "block",
+        "Card number should have been blocked outright, not just flagged.",
+    )
+    audit.log_feedback(
+        results[1].check_id, "demo-reviewer", results[1].decision,
+        "Agreed — response is accurate and matches the product spec sheet.",
+    )
+    audit.log_feedback(
+        results[3].check_id, "demo-reviewer", results[3].decision,
+        "Agreed — hallucinated PTO figures correctly flagged for edit.",
+    )
+    audit.log_feedback(
+        results[6].check_id, "demo-reviewer", "block",
+        "Biased justification for a lending decision should be blocked, not just reviewed.",
+    )
 
 
 @app.post("/api/feedback")

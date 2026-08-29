@@ -216,14 +216,14 @@
           <label>Explanation trace</label>
           <ol class="explain-list" id="explainList"></ol>
           <div id="feedbackRow">
-            <span class="muted" style="font-size:12px;">Human review — actual correct decision:</span>
+            <span class="muted" style="font-size:12px;">Human review — correct decision (defaults to ControlPlane's own call; change it to record an override):</span>
             <select id="correctDecision">
               <option value="allow">allow</option>
               <option value="edit">edit</option>
               <option value="flag_for_review">flag_for_review</option>
               <option value="block">block</option>
             </select>
-            <button class="ghost" id="submitFeedback">Submit override</button>
+            <button class="ghost" id="submitFeedback">Submit reviewer decision</button>
             <span id="feedbackStatus" class="muted" style="font-size:12px;"></span>
           </div>
         </div>
@@ -447,6 +447,11 @@ function renderResult(data) {
   el("explainList").innerHTML = data.explanation.map(e => `<li>${e}</li>`).join("");
   el("feedbackRow").style.display = "flex";
   el("feedbackStatus").textContent = "";
+  // Default the reviewer dropdown to what ControlPlane actually decided, so
+  // clicking "Submit" without changing anything records a CONFIRMATION, not
+  // a silent override — the override rate should reflect a deliberate
+  // disagreement, not an unchanged dropdown default.
+  el("correctDecision").value = data.decision;
 }
 
 el("submitFeedback").addEventListener("click", async () => {
