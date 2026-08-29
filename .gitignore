@@ -5,3 +5,4 @@ venv/
 backend/controlplane_audit.db
 .claude/
 .DS_Store
+DEMO_SCRIPT.md
