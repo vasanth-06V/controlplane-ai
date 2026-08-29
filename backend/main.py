@@ -13,6 +13,7 @@ from models import CheckRequest, CheckResponse, CategoryResult, FeedbackRequest
 from policy import PolicyRegistry, decide
 import audit
 from detectors import pii, hallucination, bias
+from seed_data import SEED_CHECKS
 
 app = FastAPI(title="ControlPlane.ai", version="0.1.0")
 app.add_middleware(
@@ -150,6 +151,19 @@ async def check(req: CheckRequest):
         human_review_required=human_review_required, explanation=explanation,
         policy_version=registry.version,
     )
+
+
+@app.on_event("startup")
+async def seed_demo_data_if_empty():
+    if audit.get_metrics()["total_checks"] > 0:
+        return
+    check_ids = []
+    for example in SEED_CHECKS:
+        result = await check(CheckRequest(**example))
+        check_ids.append(result.check_id)
+    # One illustrative reviewer override so the feedback-driven metrics
+    # (override rate, FP/FN-like counts) aren't empty on first load either.
+    audit.log_feedback(check_ids[0], "demo-reviewer", "block", "Card number should have been blocked, not just flagged.")
 
 
 @app.post("/api/feedback")

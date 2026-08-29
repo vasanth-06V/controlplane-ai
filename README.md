@@ -140,6 +140,12 @@ python -m uvicorn main:app --reload --app-dir backend
 Then open **http://127.0.0.1:8000** — the FastAPI app serves the dashboard directly, no separate
 frontend build step.
 
+**First run:** the app auto-seeds ~9 illustrative interactions (across all 3 use cases, with one
+reviewer override) the first time it starts against an empty audit database, specifically so the
+Business Dashboard / Detection Metrics / Audit Log aren't blank before you've run anything yourself
+(see [`backend/seed_data.py`](backend/seed_data.py)). It only seeds once — delete
+`backend/controlplane_audit.db` and restart if you want a truly clean slate.
+
 - **Live Console** — pick a use case, load a built-in example (or write your own prompt/response
   pair), run a check, see the full score breakdown and explanation trace, and submit a reviewer
   override.
